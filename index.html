@@ -7,6 +7,7 @@
 <meta name="description" content="Uč se chytře je česká učící aplikace pro 6., 7., 8. a 9. třídu ZŠ. Vysvětlení témat, procvičování, testy, XP a opakování chyb.">
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
 <meta name="theme-color" content="#081426">
+<meta name="application-name" content="Uč se chytře">
 <meta name="color-scheme" content="dark">
 <link rel="canonical" href="https://chytreuceni-online.github.io/chytreuceni-online/">
 <link rel="icon" type="image/svg+xml" href="logo.svg">
@@ -152,6 +153,7 @@ details p{color:var(--muted);line-height:1.65}
   font-size:14px
 }
 
+/* App view */
 .app-shell{
   position:fixed;inset:0;z-index:1000;background:#07111f;
   display:none;flex-direction:column
@@ -165,6 +167,7 @@ details p{color:var(--muted);line-height:1.65}
 .app-bar img{width:40px;height:40px;object-fit:contain;border-radius:10px;background:#fff}
 .app-frame{width:100%;height:calc(100dvh - 64px);border:0;background:#07111f}
 
+/* Feedback */
 .modal{
   position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.68);
   display:none;place-items:center;padding:18px
@@ -256,7 +259,7 @@ details p{color:var(--muted);line-height:1.65}
       <article class="card"><div class="icon">🧠</div><h3>Procvičení chyb</h3><p>Chybné odpovědi si můžeš znovu zopakovat.</p></article>
       <article class="card"><div class="icon">⭐</div><h3>XP a postup</h3><p>Výsledky a postup se ukládají v prohlížeči.</p></article>
       <article class="card"><div class="icon">✍️</div><h3>Vlastní zadání</h3><p>Vytvoříš si test z vlastní otázky.</p></article>
-      <article class="card"><div class="icon">🏆</div><h3>Velké testy</h3><p>Pololetní, velký a boss test pro větší opakování.</p></article>
+      <article class="card"><div class="icon">🏆</div><h3>Velké testy</h3><p>Test předmětu, Boss test a kompletní test až se 100 otázkami.</p></article>
       <article class="card"><div class="icon">📱</div><h3>Mobil i počítač</h3><p>Rozložení webu se přizpůsobí velikosti obrazovky.</p></article>
     </div>
   </section>
@@ -331,6 +334,7 @@ details p{color:var(--muted);line-height:1.65}
   </footer>
 </main>
 
+<!-- Aplikace přímo na stejné stránce -->
 <section id="appShell" class="app-shell" aria-hidden="true">
   <div class="app-bar">
     <div class="app-bar-left">
@@ -342,6 +346,7 @@ details p{color:var(--muted);line-height:1.65}
   <iframe id="appFrame" class="app-frame" title="Uč se chytře – aplikace"></iframe>
 </section>
 
+<!-- Nahlášení chyby -->
 <div id="feedbackModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
   <div class="modal-card">
     <div class="modal-head">
@@ -371,17 +376,32 @@ details p{color:var(--muted);line-height:1.65}
 </div>
 
 <script>
+
 let appLoaded = false;
 let historyAdded = false;
+
+
 
 function spustitAplikaci(){
   const shell = document.getElementById("appShell");
   const frame = document.getElementById("appFrame");
-  if(!appLoaded){frame.src = "app.html";appLoaded = true;}
+
+  if(!appLoaded){
+    frame.src = "app.html";
+    appLoaded = true;
+  }
+
   shell.classList.add("open");
   shell.setAttribute("aria-hidden","false");
   document.body.classList.add("app-open");
-  try{if(location.hash !== "#aplikace"){history.pushState({app:true},"","#aplikace");historyAdded = true;}}catch(e){}
+
+  try{
+    if(location.hash !== "#aplikace"){
+      history.pushState({app:true},"","#aplikace");
+      historyAdded = true;
+    }
+  }catch(e){}
+
   document.title = "Uč se chytře – aplikace";
 }
 
@@ -391,22 +411,78 @@ function zavritAplikaci(){
   shell.setAttribute("aria-hidden","true");
   document.body.classList.remove("app-open");
   document.title = "Uč se chytře – učení a testy pro 6.–9. třídu";
-  try{if(location.hash === "#aplikace"){history.replaceState(null,"",location.pathname + location.search);}}catch(e){}
+
+  try{
+    if(location.hash === "#aplikace"){
+      history.replaceState(null,"",location.pathname + location.search);
+    }
+  }catch(e){}
 }
 
 window.addEventListener("popstate", () => {
   if(location.hash !== "#aplikace"){
     const shell = document.getElementById("appShell");
-    shell.classList.remove("open");shell.setAttribute("aria-hidden","true");document.body.classList.remove("app-open");
+    shell.classList.remove("open");
+    shell.setAttribute("aria-hidden","true");
+    document.body.classList.remove("app-open");
     document.title = "Uč se chytře – učení a testy pro 6.–9. třídu";
   }
 });
 
-function otevritHlaseni(){document.getElementById("feedbackModal").classList.add("open");document.getElementById("feedbackStatus").textContent = "";setTimeout(()=>document.getElementById("feedbackWhere").focus(),50);}
-function zavritHlaseni(){document.getElementById("feedbackModal").classList.remove("open");}
-function vytvorTextHlaseni(){const kde=document.getElementById("feedbackWhere").value.trim()||"Neuvedeno";const popis=document.getElementById("feedbackText").value.trim()||"Neuvedeno";return ["HLÁŠENÍ CHYBY – UČ SE CHYTŘE","","Kde je chyba: "+kde,"Popis: "+popis,"","Datum: "+new Date().toLocaleString("cs-CZ"),"Stránka: "+location.href,"Prohlížeč: "+navigator.userAgent].join("\n");}
-async function zkopirovatHlaseni(){const status=document.getElementById("feedbackStatus"),text=vytvorTextHlaseni();try{await navigator.clipboard.writeText(text);status.textContent="✅ Hlášení je zkopírované do schránky.";}catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");status.textContent="✅ Hlášení je zkopírované do schránky.";}catch(err){status.textContent="Nepodařilo se kopírovat automaticky. Označ text v poli a zkopíruj ho ručně.";}ta.remove();}}
-document.addEventListener("keydown",(e)=>{if(e.key==="Escape"){if(document.getElementById("feedbackModal").classList.contains("open"))zavritHlaseni();else if(document.getElementById("appShell").classList.contains("open"))zavritAplikaci();}});
+function otevritHlaseni(){
+  document.getElementById("feedbackModal").classList.add("open");
+  document.getElementById("feedbackStatus").textContent = "";
+  setTimeout(()=>document.getElementById("feedbackWhere").focus(),50);
+}
+
+function zavritHlaseni(){
+  document.getElementById("feedbackModal").classList.remove("open");
+}
+
+function vytvorTextHlaseni(){
+  const kde = document.getElementById("feedbackWhere").value.trim() || "Neuvedeno";
+  const popis = document.getElementById("feedbackText").value.trim() || "Neuvedeno";
+  return [
+    "HLÁŠENÍ CHYBY – UČ SE CHYTŘE",
+    "",
+    "Kde je chyba: " + kde,
+    "Popis: " + popis,
+    "",
+    "Datum: " + new Date().toLocaleString("cs-CZ"),
+    "Stránka: " + location.href,
+    "Prohlížeč: " + navigator.userAgent
+  ].join("\n");
+}
+
+async function zkopirovatHlaseni(){
+  const status = document.getElementById("feedbackStatus");
+  const text = vytvorTextHlaseni();
+  try{
+    await navigator.clipboard.writeText(text);
+    status.textContent = "✅ Hlášení je zkopírované do schránky.";
+  }catch(e){
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try{
+      document.execCommand("copy");
+      status.textContent = "✅ Hlášení je zkopírované do schránky.";
+    }catch(err){
+      status.textContent = "Nepodařilo se kopírovat automaticky. Označ text v poli a zkopíruj ho ručně.";
+    }
+    ta.remove();
+  }
+}
+
+document.addEventListener("keydown",(e)=>{
+  if(e.key === "Escape"){
+    if(document.getElementById("feedbackModal").classList.contains("open")) zavritHlaseni();
+    else if(document.getElementById("appShell").classList.contains("open")) zavritAplikaci();
+  }
+});
 </script>
 </body>
 </html>
